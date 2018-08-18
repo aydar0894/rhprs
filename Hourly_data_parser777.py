@@ -72,6 +72,7 @@ def daily_price_historical(symbol, comparison_symbol, toTs, limit=100, aggregate
     page = requests.get(url)
     data = page.json()['Data']
     df = pd.DataFrame(data)
+    print(df.columns)
     df['timestamp'] = [datetime.datetime.fromtimestamp(d) for d in df.time]
     return [df, data]
 
@@ -127,7 +128,7 @@ def parse():
             daily_data.update({'name': exchange, 'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
             print("Iteration Daily " + str(cntr_d) + ":\n")
             daily_data.update({'name': exchange, 'Ccy': coin}, {'$set':  {'last_update': time.time()}}, upsert=True)
-        time.sleep(3)
+            time.sleep(3)
 
     #Hourly data
     for exc in list_exchanges:
