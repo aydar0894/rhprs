@@ -217,9 +217,8 @@ def parse(lim, data_type):
                 data = res[1]
                 minute_data.update({'name': exc, 'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
                 print("Iteration Minute " + str(cntr) + ":\n")
-            time.sleep(3)
                 minute_data.update({'name': exc, 'Ccy': coin}, {'$set':  {'last_update': time.time()}}, upsert=True)
-
+            time.sleep(3)
 
 
 # In[12]:
