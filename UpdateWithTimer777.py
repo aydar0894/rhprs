@@ -160,24 +160,20 @@ def parse(lim, data_type):
     #Hourly data  
     if data_type == 2:
         for exc in list_exchanges:
-            for coin in list_coins:   
-                
-                flag_coin_skip = False             
+            for coin in list_coins:
+                         
                 countercurrency = "USD"
                 cntr += 1
                 
                 try:
                     res=hourly_price_historical(coin, countercurrency, limit=lim, exchange=exc)
                     if res[0]['close'].iloc[0] == 0:
-                        break
+                        next
                 except:
                     # if no data found at all
                     if cntr == 1:
                         print("      No data for currency available, Skipping")
-                    flag_coin_skip = True
-
-                if flag_coin_skip == True:
-                    break
+                    next
 
                 cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']                
                 data = res[1]
@@ -192,21 +188,20 @@ def parse(lim, data_type):
             for coin in list_coins:                                      
                                
                 countercurrency = "USD"                
-                flag_coin_skip = False                
+                              
                 cntr += 1    
                 
                 try:
                     res=minute_price_historical(coin, countercurrency, limit=lim, exchange=exc)                
                     if res[0]['close'].iloc[0] == 0:
-                        break
+                        next
                 except:                
                     # if no data found at all
                     if cntr == 1:
                         print("      No data for currency available, Skipping")
-                    flag_coin_skip = True
+                    next
 
-                if flag_coin_skip == True:
-                    break
+                
 
                 cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']             
                 
