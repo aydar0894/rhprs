@@ -30,7 +30,7 @@ def get_timestamps(exchange):
     minute_data = db.minute_data
     hourly_data = db.hourly_data
     daily_data = db.daily_data
-    minute_ts = minute_data.find_one({"name": exchange})    
+    minute_ts = minute_data.find_one({"name": exchange})
     try:
         minute_ts = minute_ts["last_update"]
     except:
@@ -56,7 +56,7 @@ class DownloadWorker(Thread):
         self.queue = queue
 
     def run(self):
-        while True:           
+        while True:
             data = self.queue.get()
             data_type = data
             if data_type == 1:
@@ -147,33 +147,33 @@ def parse(lim, data_type):
     client = MongoClient('localhost',
                     authSource='bitcoin')
     db = client.bitcoin
-    minute_data = db.minute_data   
+    minute_data = db.minute_data
     hourly_data = db.hourly_data
     daily_data = db.daily_data
     cntr = 0
-    
+
     #Daily data
     if data_type == 3:
         for exc in list_exchanges:
             for coin in list_coins:
                 cntr += 1
                 countercurrency = "USD"
-                res = daily_price_historical(coin, countercurrency, limit=lim, exchange=exc) 
+                res = daily_price_historical(coin, countercurrency, limit=lim, exchange=exc)
                 cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
                 data = res[1]
                 daily_data.update({'name': exc, 'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
                 print("Iteration Daily " + str(cntr) + ":\n")
                 daily_data.update({'name': exc, 'Ccy': coin}, {'$set':  {'last_update': time.time()}}, upsert=True)
                 time.sleep(3)
-            
-    #Hourly data  
+
+    #Hourly data
     if data_type == 2:
         for exc in list_exchanges:
             for coin in list_coins:
-                         
+
                 countercurrency = "USD"
                 cntr += 1
-                
+
                 try:
                     res=hourly_price_historical(coin, countercurrency, limit=lim, exchange=exc)
                     if res[0]['close'].iloc[0] == 0:
@@ -184,7 +184,7 @@ def parse(lim, data_type):
                         print("      No data for currency available, Skipping")
                     next
 
-                cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']                
+                cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
                 data = res[1]
                 hourly_data.update({'name': exc, 'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
                 print("Iteration Hourly " + str(cntr) + ":\n")
@@ -194,30 +194,30 @@ def parse(lim, data_type):
     #Minute data
     if data_type == 1:
         for exc in list_exchanges:
-            for coin in list_coins:                                      
-                               
-                countercurrency = "USD"                
-                              
-                cntr += 1    
-                
+            for coin in list_coins:
+
+                countercurrency = "USD"
+
+                cntr += 1
+
                 try:
-                    res=minute_price_historical(coin, countercurrency, limit=lim, exchange=exc)                
+                    res=minute_price_historical(coin, countercurrency, limit=lim, exchange=exc)
                     if res[0]['close'].iloc[0] == 0:
                         next
-                except:                
+                except:
                     # if no data found at all
                     if cntr == 1:
                         print("      No data for currency available, Skipping")
                     next
 
-                
 
-                cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']             
-                
+
+                cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
+
                 data = res[1]
                 minute_data.update({'name': exc, 'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
                 print("Iteration Minute " + str(cntr) + ":\n")
-                time.sleep(3)
+            time.sleep(3)
                 minute_data.update({'name': exc, 'Ccy': coin}, {'$set':  {'last_update': time.time()}}, upsert=True)
 
 
@@ -225,17 +225,17 @@ def parse(lim, data_type):
 # In[12]:
 
 def main():
-    queue = Queue()   
-    
+    queue = Queue()
+
     for x in range(4):
-        worker = DownloadWorker(queue)       
+        worker = DownloadWorker(queue)
         worker.daemon = False
         worker.start()
-      
-    last_updates = get_timestamps("Kraken")    
+
+    last_updates = get_timestamps("Kraken")
 
     timestamp = time.time()
-    
+
 
     if(timestamp >= last_updates[2] + 60*60*24):
         limit = int((timestamp - last_updates[2])/(60*60*24))
@@ -249,7 +249,7 @@ def main():
     if(timestamp >= last_updates[0] + 60):
         limit = int((timestamp - last_updates[0])/60)
         parse(lim = limit, data_type = 1)
-    
+
     for i in range(3):
         queue.put(i + 1)
 
@@ -260,6 +260,3 @@ main()
 
 
 # In[ ]:
-
-
-
