@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 import cryptocompare
 import requests
@@ -21,7 +21,7 @@ list_coins = ["BTC", "ETH", "LTC", "ETC", "XRP", "XMR"]
 list_exchanges = ["Kraken", "Poloniex", "Bitfinex", "Huobi", "Bitstamp", "LocalBitcoins", "Cryptsy", "BitBay", "BitTrex", "Exmo"]
 
 
-# In[2]:
+# In[3]:
 
 def get_timestamps(exchange):
     client = MongoClient('localhost',
@@ -48,7 +48,7 @@ def get_timestamps(exchange):
     return [minute_ts, hourly_ts, daily_ts]
 
 
-# In[27]:
+# In[4]:
 
 class DownloadWorker(Thread):
     def __init__(self, queue):
@@ -58,7 +58,7 @@ class DownloadWorker(Thread):
     def run(self):
         while True:           
             data = self.queue.get()
-            data_type = data[0]
+            data_type = data
             if data_type == 1:
                 run_minute()
             if data_type == 2:
@@ -68,31 +68,40 @@ class DownloadWorker(Thread):
             self.queue.task_done()
 
 
-# In[28]:
+# In[5]:
 
 def run_minute():
+    i = 0
     while True:
+        i+=1
         time.sleep(60)
         parse(1, 1)
+        print("M " + str(i))
 
 
-# In[29]:
+# In[6]:
 
 def run_hourly():
+    i = 0
     while True:
+        i+=1
         time.sleep(60*60)
         parse(1, 2)
+        print("H " + str(i))
 
 
-# In[30]:
+# In[7]:
 
 def run_daily():
+    i = 0
     while True:
+        i+=1
         time.sleep(60*60*24)
         parse(1, 3)
+        print("D " + str(i))
 
 
-# In[46]:
+# In[8]:
 
 def hourly_price_historical(symbol, comparison_symbol, limit=1, aggregate=1, exchange=''):
     url = 'https://min-api.cryptocompare.com/data/histohour?fsym={}&tsym={}&limit={}&aggregate={}'    .format(symbol.upper(), comparison_symbol.upper(), limit, aggregate)
@@ -105,7 +114,7 @@ def hourly_price_historical(symbol, comparison_symbol, limit=1, aggregate=1, exc
     return [df, data]
 
 
-# In[52]:
+# In[9]:
 
 def daily_price_historical(symbol, comparison_symbol, limit=1, aggregate=1, exchange=''):
     url = 'https://min-api.cryptocompare.com/data/histoday?fsym={}&tsym={}&limit={}'    .format(symbol.upper(), comparison_symbol.upper(), limit)
@@ -119,7 +128,7 @@ def daily_price_historical(symbol, comparison_symbol, limit=1, aggregate=1, exch
     return [df, data]
 
 
-# In[53]:
+# In[10]:
 
 def minute_price_historical(symbol, comparison_symbol, limit=1, aggregate=1, exchange=''):
     url = 'https://min-api.cryptocompare.com/data/histominute?fsym={}&tsym={}&limit={}&aggregate={}'    .format(symbol.upper(), comparison_symbol.upper(), limit, aggregate)
@@ -132,7 +141,7 @@ def minute_price_historical(symbol, comparison_symbol, limit=1, aggregate=1, exc
     return [df, data]
 
 
-# In[73]:
+# In[11]:
 
 def parse(lim, data_type):
     client = MongoClient('localhost',
@@ -213,7 +222,7 @@ def parse(lim, data_type):
 
 
 
-# In[74]:
+# In[12]:
 
 def main():
     queue = Queue()   
@@ -245,7 +254,12 @@ def main():
         queue.put(i + 1)
 
 
-# In[75]:
+# In[13]:
 
 main()
+
+
+# In[ ]:
+
+
 
