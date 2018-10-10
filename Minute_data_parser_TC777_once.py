@@ -170,20 +170,7 @@ def minute_update_one(coin, countercurrency, prox, exchange):
     if res[0]['close'].iloc[0] == 0:
                 return
     cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
-    data = res[1][1].copy()
-    current_info = minute_data.find_one({'name': exchange, 'pair': coin + '/' + countercurrency})
-    tmp_all_data = current_info["history"]
-    tmp_24 = tmp_all_data[-60*24:]
-    tmp_7d = tmp_all_data[-60*24*7:]
-    tmp_30d = tmp_all_data[-60*24*30:]
-    change_24 = tmp_24[len(tmp_24) - 1]['close'] - tmp_24[0]['close']
-    change_7d = tmp_7d[len(tmp_7d) - 1]['close'] - tmp_7d[0]['close']
-    change_30d = tmp_30d[len(tmp_30d) - 1]['close'] - tmp_30d[0]['close']
-    data['change_24'] = change_24
-    data['change_7d'] = change_7d
-    data['change_30d'] = change_30d
-    result_minutes.update({exchange + '_' + coin + '/' + countercurrency : str(data)})
-#                 print(data)
+    #                 print(data)
     minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$addToSet':  {'history': res[1][1]}}, upsert=True)
     minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$set':  {'last_update': time.time(), 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
 
@@ -225,7 +212,7 @@ print(arr[-(3*2):])
 
 # In[12]:
 
-def minute_update_with_proxies(proxies, ws):
+def minute_update_with_proxies(proxies):
     time_start = time.time()
     cntr = 0
     client = MongoClient('localhost',
@@ -266,148 +253,17 @@ def minute_update_with_proxies(proxies, ws):
     print(time.time() - time_start)
 
 
-# In[13]:
 
-def on_message(ws, message):
-    print("Message")
-def on_open(ws):
-    ws.send("market_screener_updater")
-    print("Opened")
-def on_error(ws, error):
-    print(error)
-def on_close(ws):
-    print("Closed")
-
-
-# In[14]:
-
-def start(ws):
+def start():
     # Run proxy check
     del valid_proxies[:]
     proxy_list_path = "proxies.txt"
     check_proxies(proxy_list_path, 20)
 
 #     print(valid_proxies)
-    minute_update_with_proxies(valid_proxies, ws)
+    minute_update_with_proxies(valid_proxies)
 
 
 # In[15]:
 
-def main():
-    websocket.enableTrace(True)
-    ws = websocket.WebSocketApp("ws://localhost:8800/marketsc",
-                              on_message = on_message,
-                              on_error = on_error,
-                              on_close = on_close)
-    ws.on_open = on_open
-    WsQueue.put(ws)
-    worker = WsWorker(WsQueue)
-    worker.daemon = True
-    worker.start()
-
-#     ws.run_forever()
-
-    while True:
-        prev_time = time.time()
-        start(ws)
-        if time.time() - prev_time < 60:
-            time.sleep(time.time() - prev_time)
-
-
-# In[ ]:
-
-main()
-
-
-
-# In[44]:
-
-f = open("proxies.txt", "r")
-proxy_list = f.read().split('\n')[:-1]
-for proxy_info in proxy_list:
-    proxy_handler = urllib.ProxyHandler({'http': proxy_info})
-    opener = urllib.build_opener(proxy_handler)
-    opener.addheaders = [('User-agent','Mozilla/5.0')]
-    urllib.install_opener(opener)
-    req = urllib.Request("http://www.google.com")
-    try:
-        sock=urllib.urlopen(req, timeout= 2)
-    except:
-        print('x',proxy_info)
-        next
-    rs = sock.read(1000)
-#     print(rs)
-    if '<title>Google</title>' in str(rs):
-        print('0',proxy_info)
-    else:
-        print('x',proxy_info)
-
-
-
-# In[ ]:
-
-# 13 min and 20 sec
-def minute_update():
-    print(time.time())
-    cntr = 0
-    client = MongoClient('localhost',
-                        authSource='bitcoin')
-    db = client.bitcoin
-    minute_data = db.minute_data
-    coin_pairs = db.coin_pairs
-    lim = 1
-
-    for data in coin_pairs.find():
-        exchange = data["name"]
-        pairs = data["history"]
-#         coin_pairs.update({'name': exchange}, {'$set':  {'available': []}}, upsert=True)
-        available = coin_pairs.find_one({'name': exchange})
-
-
-        for pair in pairs:
-            tmp = pair.split('/')
-            coin = tmp[0]
-            countercurrency = tmp[1]
-#             print(exchange, coin, countercurrency)
-            cntr += 1
-            if str(coin + '/' + countercurrency) in available["available"]:
-                try:
-                    res=minute_price_historical(coin, countercurrency, limit=lim, exchange=exchange)
-                    if res[0]['close'].iloc[0] == 0:
-                        break
-                    cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
-                    data = res[1][1]
-    #                 print(data)
-                    minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$addToSet':  {'history': data}}, upsert=True)
-                    minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$set':  {'last_update': time.time()}}, upsert=True)
-    #                 coin_pairs.update({'name': exchange}, {'$addToSet':  {'available':  coin + '/' + countercurrency}}, upsert=True)
-
-                except:
-                    # if no data found at all
-
-    #                 print("      No data for currency available, Skipping")
-
-
-                    break
-
-
-        time.sleep(1)
-    print(time.time())
-
-
-# In[ ]:
-
-proxy_obj = {'https' : 'https://204.48.19.70:8080'}
-res=minute_price_historical("BTC", "USD", limit=1, exchange="Bitfinex", proxy = proxy_obj)
-print(res[1][1])
-
-
-# In[47]:
-
-result = {}
-result.update({"Bitfinex_btcds/usd" : 4})
-
-print(result)
-
-
-# In[ ]:
+start()
