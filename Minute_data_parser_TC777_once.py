@@ -247,7 +247,7 @@ def minute_update_with_proxies(proxies):
         worker.start()
 
     dataUpdateQueue.join()
-    ws.send(str(result_minutes))
+
 #     print(result_minutes)
     result_minutes.clear()
     print(time.time() - time_start)
