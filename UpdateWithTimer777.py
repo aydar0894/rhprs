@@ -17,8 +17,8 @@ import os
 from queue import Queue
 from threading import Thread
 
-list_coins = ["BTC", "ETH", "LTC", "ETC", "XRP", "XMR"]
-list_exchanges = ["Kraken", "Poloniex", "Bitfinex", "Huobi", "Bitstamp", "LocalBitcoins", "Cryptsy", "BitBay", "BitTrex", "Exmo"]
+list_coins = ["BTC", "ETH", "LTC", "ETC", "XRP", "XMR", "BCH", "EOS", "ADA", "XLM", "NEO", "DASH", "ZEC", "BTG", "SC"]
+list_exchanges = ["Ag", "Kraken", "Poloniex", "Bitfinex", "Bitstamp", "BitTrex"]
 
 
 # In[3]:
@@ -158,7 +158,11 @@ def parse(lim, data_type):
             for coin in list_coins:
                 cntr += 1
                 countercurrency = "USD"
-                res = daily_price_historical(coin, countercurrency, limit=lim, exchange=exc)
+                if exc == "Ag":
+                    res = daily_price_historical(coin, countercurrency, limit=lim)
+                else:
+                    res = daily_price_historical(coin, countercurrency, limit=lim, exchange=exc)
+
                 cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
                 data = res[1]
                 daily_data.update({'name': exc, 'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
@@ -175,7 +179,12 @@ def parse(lim, data_type):
                 cntr += 1
 
                 try:
-                    res=hourly_price_historical(coin, countercurrency, limit=lim, exchange=exc)
+                    if exc == "Ag":
+                        res=hourly_price_historical(coin, countercurrency, limit=lim)
+                    else:
+                        res=hourly_price_historical(coin, countercurrency, limit=lim, exchange=exc)
+
+
                     if res[0]['close'].iloc[0] == 0:
                         next
                 except:
@@ -201,7 +210,12 @@ def parse(lim, data_type):
                 cntr += 1
 
                 try:
-                    res=minute_price_historical(coin, countercurrency, limit=lim, exchange=exc)
+                    if exc == "Ag":
+                        res=minute_price_historical(coin, countercurrency, limit=lim)
+                    else:
+                        res=minute_price_historical(coin, countercurrency, limit=lim, exchange=exc)
+
+
                     if res[0]['close'].iloc[0] == 0:
                         next
                 except:

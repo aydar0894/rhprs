@@ -16,9 +16,8 @@ from socketIO_client.transports import get_response
 from socketIO_client.parsers import get_byte, _read_packet_text, parse_packet_text
 
 
-list_coins = ["BTC", "ETH", "LTC", "ETC", "XRP", "XMR"]
-list_exchanges = ["Kraken", "Poloniex", "Bitfinex", "Huobi", "Bitstamp", "LocalBitcoins", "Cryptsy", "BitBay", "BitTrex", "Exmo"]
-
+list_coins = ["BTC", "ETH", "LTC", "ETC", "XRP", "XMR", "BCH", "EOS", "ADA", "XLM", "NEO", "DASH", "ZEC", "BTG", "SC"]
+list_exchanges = ["Ag", "Kraken", "Poloniex", "Bitfinex", "Bitstamp", "BitTrex"]
 # In[2]:
 
 from requests.exceptions import ConnectionError
@@ -122,7 +121,10 @@ def parse():
             coin            = coin
             exchange        = exc
             countercurrency = "USD"
-            res = daily_price_historical(coin, countercurrency, exchange)
+            if exc == "Ag":
+                res = daily_price_historical(coin, countercurrency)
+            else:
+                res = daily_price_historical(coin, countercurrency, exchange = exc)
             cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
             data = res[1]
             daily_data.update({'name': exchange, 'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
@@ -143,7 +145,11 @@ def parse():
             while date_tmp > date_from:
                 cntr += 1
                 try:
-                    res=hourly_price_historical(coin, countercurrency, toTs=date_tmp, limit=(30*24) ,aggregate=1, exchange=exchange)
+                    if exc == "Ag":
+                        res=hourly_price_historical(coin, countercurrency, toTs=date_tmp, limit=(30*24) ,aggregate=1)
+                    else:
+                        res=hourly_price_historical(coin, countercurrency, toTs=date_tmp, limit=(30*24) ,aggregate=1, exchange=exchange)
+
                     if res[0]['close'].iloc[0] == 0:
                         break
                 except:
@@ -178,7 +184,11 @@ def parse():
             while date_tmp > date_from:
                 cntr += 1
                 try:
-                    res=minute_price_historical(coin, countercurrency, toTs=date_tmp, limit=(60*24) ,aggregate=1, exchange=exchange)
+                    if exc == "Ag":
+                        res=minute_price_historical(coin, countercurrency, toTs=date_tmp, limit=(60*24) ,aggregate=1)
+                    else:
+                        res=minute_price_historical(coin, countercurrency, toTs=date_tmp, limit=(60*24) ,aggregate=1, exchange=exchange)
+
                     if res[0]['close'].iloc[0] == 0:
                         break
                 except:
