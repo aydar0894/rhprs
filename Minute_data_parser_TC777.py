@@ -160,32 +160,32 @@ def minute_update_one(coin, countercurrency, prox, exchange):
     try:
         proxy_obj = {'https' : 'https://' + prox}
         res=minute_price_historical(coin, countercurrency, limit=lim, exchange=exchange, proxy = proxy_obj)
+        if res[0]['close'].iloc[0] == 0:
+                    return
+        cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
+        data = res[1][1].copy()
+        current_info = minute_data.find_one({'name': exchange, 'pair': coin + '/' + countercurrency})
+        tmp_all_data = current_info["history"]
+        tmp_24 = tmp_all_data[-60*24:]
+        tmp_7d = tmp_all_data[-60*24*7:]
+        tmp_30d = tmp_all_data[-60*24*30:]
+        change_24 = tmp_24[len(tmp_24) - 1]['close'] - tmp_24[0]['close']
+        change_7d = tmp_7d[len(tmp_7d) - 1]['close'] - tmp_7d[0]['close']
+        change_30d = tmp_30d[len(tmp_30d) - 1]['close'] - tmp_30d[0]['close']
+        data['change_24'] = change_24
+        data['change_7d'] = change_7d
+        data['change_30d'] = change_30d
+        result_minutes.update({exchange + '_' + coin + '/' + countercurrency : str(data)})
+    #                 print(data)
+        minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$addToSet':  {'history': res[1][1]}}, upsert=True)
+        minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$set':  {'last_update': time.time(), 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
+
 
 #         print(res[1][1])
 #
     except:
 #         print("No data")
         return
-
-    if res[0]['close'].iloc[0] == 0:
-                return
-    cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
-    data = res[1][1].copy()
-    current_info = minute_data.find_one({'name': exchange, 'pair': coin + '/' + countercurrency})
-    tmp_all_data = current_info["history"]
-    tmp_24 = tmp_all_data[-60*24:]
-    tmp_7d = tmp_all_data[-60*24*7:]
-    tmp_30d = tmp_all_data[-60*24*30:]
-    change_24 = tmp_24[len(tmp_24) - 1]['close'] - tmp_24[0]['close']
-    change_7d = tmp_7d[len(tmp_7d) - 1]['close'] - tmp_7d[0]['close']
-    change_30d = tmp_30d[len(tmp_30d) - 1]['close'] - tmp_30d[0]['close']
-    data['change_24'] = change_24
-    data['change_7d'] = change_7d
-    data['change_30d'] = change_30d
-    result_minutes.update({exchange + '_' + coin + '/' + countercurrency : str(data)})
-#                 print(data)
-    minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$addToSet':  {'history': res[1][1]}}, upsert=True)
-    minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$set':  {'last_update': time.time(), 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
 
 
 
