@@ -236,23 +236,25 @@ def minute_update_with_proxies(proxies, ws):
     lim = 1
     proxy_cntr = 0
 
-
-    for data in coin_pairs.find():
-        exchange = data["name"]
-        pairs = data["history"]
-        available = coin_pairs.find_one({'name': exchange})
-        for pair in pairs:
-            tmp = pair.split('/')
-            coin = tmp[0]
-            countercurrency = tmp[1]
-            if str(coin + '/' + countercurrency) in available["available"]:
-                tmp_obj = {}
-                if proxy_cntr == len(proxies) - 1:
-                    proxy_cntr = 0
-                proxy = proxies[proxy_cntr]
-                proxy_cntr += 1
-                tmp_obj = {'coin' : coin, 'countercurrency' : countercurrency, 'proxy' : proxy, 'exchange' : exchange}
-                dataUpdateQueue.put(tmp_obj)
+    try:
+        for data in coin_pairs.find():
+            exchange = data["name"]
+            pairs = data["history"]
+            available = coin_pairs.find_one({'name': exchange})
+            for pair in pairs:
+                tmp = pair.split('/')
+                coin = tmp[0]
+                countercurrency = tmp[1]
+                if str(coin + '/' + countercurrency) in available["available"]:
+                    tmp_obj = {}
+                    if proxy_cntr == len(proxies) - 1:
+                        proxy_cntr = 0
+                    proxy = proxies[proxy_cntr]
+                    proxy_cntr += 1
+                    tmp_obj = {'coin' : coin, 'countercurrency' : countercurrency, 'proxy' : proxy, 'exchange' : exchange}
+                    dataUpdateQueue.put(tmp_obj)
+    except:
+        return
 
     for x in range(40):
         worker = DataUpdateWorker(dataUpdateQueue)
