@@ -143,7 +143,7 @@ def check_proxies(proxy_list_path, num_threads):
         proxyCheckQueue.put(proxy_info)
 
     proxyCheckQueue.join()
-
+    f.close()
     print(len(valid_proxies))
 #     print("Elapsed Time: %s" % (time.time() - start))
 
@@ -263,7 +263,7 @@ def minute_update_with_proxies(proxies, ws):
 
     dataUpdateQueue.join()
     ws.send(str(result_minutes))
-#     print(result_minutes)
+    print(result_minutes)
     result_minutes.clear()
     print(time.time() - time_start)
 
@@ -313,7 +313,7 @@ def main():
         prev_time = time.time()
         start(ws)
         if time.time() - prev_time < 60:
-            time.sleep(time.time() - prev_time)
+            time.sleep(60-(time.time() - prev_time))
 
 
 # In[ ]:
