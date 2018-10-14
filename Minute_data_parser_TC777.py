@@ -178,7 +178,7 @@ def minute_update_one(coin, countercurrency, prox, exchange):
         result_minutes.update({exchange + '_' + coin + '/' + countercurrency : str(data)})
     #                 print(data)
         minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$addToSet':  {'history': res[1][1]}}, upsert=True)
-        minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$set':  {'last_update': time.time(), 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
+        minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$set':  {'last_update': time.time(), 'price': res[1][1]['close'], 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
 
 
 #         print(res[1][1])

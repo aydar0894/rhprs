@@ -172,7 +172,7 @@ def minute_update_one(coin, countercurrency, prox, exchange):
     cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
     #                 print(data)
     minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$addToSet':  {'history': res[1][1]}}, upsert=True)
-    minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$set':  {'last_update': time.time()}}, upsert=True)
+    minute_data.update({'name': exchange, 'pair': coin + '/' + countercurrency}, {'$set':  {'last_update': time.time(), 'price': res[1][1]['close']}}, upsert=True)
 
 
 
