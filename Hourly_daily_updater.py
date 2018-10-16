@@ -365,7 +365,7 @@ def parse(dtype = "hourly"):
                 daily_data.update({'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
                 print("Iteration Daily " + str(cntr_d) + ":\n")
                 daily_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time()}}, upsert=True)
-                time.sleep(2)
+                time.sleep(3)
             except:
                 next
         new_compare = MultiplierCorellationCalculator(
@@ -411,7 +411,7 @@ def parse(dtype = "hourly"):
             data = res[1][1]
             hourly_data.update({'Ccy': coin}, {'$push':  {'history': data}}, upsert=True)
             print("Iteration Hourly " + str(cntr) + ":\n")
-            time.sleep(2)
+            time.sleep(3)
             hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': dat['close'], 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
 
 #         new_compare = MultiplierCorellationCalculator(
