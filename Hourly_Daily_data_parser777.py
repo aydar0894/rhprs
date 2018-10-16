@@ -44,7 +44,7 @@ class ProxyCheckWorker(Thread):
         self.queue = queue
 
     def run(self):
-        while True:           
+        while True:
             proxy_info = self.queue.get()
             proxy_handler = urllib.ProxyHandler({'http': proxy_info})
             opener = urllib.build_opener(proxy_handler)
@@ -58,28 +58,28 @@ class ProxyCheckWorker(Thread):
                     valid_proxies.append(proxy_info)
             except:
                 pass
-                
-            
+
+
             self.queue.task_done()
 
 
 # In[3]:
 
-def check_proxies(proxy_list_path, num_threads):    
+def check_proxies(proxy_list_path, num_threads):
     result = []
     start = time.time()
     f = open(proxy_list_path, "r")
-    proxy_list = f.read().split('\n')[:-1]    
+    proxy_list = f.read().split('\n')[:-1]
     for x in range(num_threads):
-        worker = ProxyCheckWorker(proxyCheckQueue)       
+        worker = ProxyCheckWorker(proxyCheckQueue)
         worker.daemon = True
         worker.start()
-        
+
     for proxy_info in proxy_list:
         proxyCheckQueue.put(proxy_info)
-    
+
     proxyCheckQueue.join()
-   
+
     print(len(valid_proxies))
 
 
@@ -172,19 +172,19 @@ def parse():
     del valid_proxies[:]
     proxy_list_path = "proxies.txt"
     check_proxies(proxy_list_path, 20)
-    
+
     client = MongoClient('localhost',
                     authSource='bitcoin')
     db = client.bitcoin
-    minute_data = db.minute_data    
+    minute_data = db.minute_data
     hourly_data = db.hourly_data
     daily_data = db.daily_data
     cntr_d = 0
-    
+
     f = open("top50_coins.txt", "r")
     list_coins = f.read().split('\n')[:-1]
     proxy_cntr = 0
-    Daily data
+    # Daily data
     for coin in list_coins:
         try:
             if proxy_cntr == len(valid_proxies) - 1:
@@ -194,7 +194,7 @@ def parse():
             proxy_obj = {'https' : 'https://' + proxy}
 
             cntr_d += 1
-            coin            = coin        
+            coin            = coin
             countercurrency = "USD"
             res = daily_price_historical(coin, countercurrency, proxy_obj)
             cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
@@ -205,16 +205,16 @@ def parse():
             time.sleep(1)
         except:
             next
-        
+
 
     #Hourly data
-    for coin in list_coins:      
+    for coin in list_coins:
         date_tmp = int(time.time())
-        cntr = 0        
-        coin            = coin        
+        cntr = 0
+        coin            = coin
         countercurrency = "USD"
-        
-        
+
+
         date_from = int(time.mktime(datetime.datetime.strptime("2009-01-09-00:00:00","%Y-%m-%d-%H:%M:%S").timetuple()))
         flag_coin_skip = False
         while date_tmp > date_from:
@@ -238,7 +238,7 @@ def parse():
             if flag_coin_skip == True:
                 break
 
-            cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto'] 
+            cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
             df = res[0]
             df = df[cols]
             date_tmp=df['time'].iloc[0]
@@ -249,20 +249,20 @@ def parse():
         hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time()}}, upsert=True)
 
     #Minute data
-#     for coin in list_coins:  
+#     for coin in list_coins:
 #         date_tmp = int(time.time())
-#         cntr = 0        
-#         coin            = coin        
+#         cntr = 0
+#         coin            = coin
 #         countercurrency = "USD"
 #         date_from = int(time.time()) - 7*1440*60
 #         flag_coin_skip = False
 #         while date_tmp > date_from:
-#             cntr += 1           
+#             cntr += 1
 #             try:
-#                 res=minute_price_historical(coin, countercurrency, toTs=date_tmp, limit=(60*24) ,aggregate=1)                
+#                 res=minute_price_historical(coin, countercurrency, toTs=date_tmp, limit=(60*24) ,aggregate=1)
 #                 if res[0]['close'].iloc[0] == 0:
 #                     break
-#             except:                
+#             except:
 #                 # if no data found at all
 #                 if cntr == 1:
 #                     print("      No data for currency available, Skipping")
@@ -271,7 +271,7 @@ def parse():
 #             if flag_coin_skip == True:
 #                 break
 
-#             cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']               
+#             cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
 #             df = res[0]
 #             df = df[cols]
 #             date_tmp=df['time'].iloc[0]
@@ -307,8 +307,8 @@ def on_subadd_response(*args):
                     authSource='bitcoin')
     db = client.bitcoin
     usd_courses_history = db.usd_courses_history
-    
-def on_connect():    
+
+def on_connect():
     print("Opened")
 def on_error():
     print("error")
@@ -330,12 +330,9 @@ socketIO.wait()
 
 with SocketIO('https://streamer.cryptocompare.com', 443, LoggingNamespace) as socketIO:
     socketIO.on('connect', on_connect)
-    socketIO.on('disconnect', on_disconnect)    
-    socketIO.emit('SubAdd',{ 'subs': ['0~Poloniex~BTC~USD']})    
+    socketIO.on('disconnect', on_disconnect)
+    socketIO.emit('SubAdd',{ 'subs': ['0~Poloniex~BTC~USD']})
     socketIO.wait()
 
 
 # In[ ]:
-
-
-
