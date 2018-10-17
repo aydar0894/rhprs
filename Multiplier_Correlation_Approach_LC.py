@@ -221,17 +221,17 @@ class MultiplierCorellationCalculator:
     def _timeseries(self, benchmark_ccy, coin_ccy, horizon):
         df_benchmark = self._retrieve_currency_history(benchmark_ccy)
         df_benchmark = df_benchmark.pct_change()
-        pprint(horizon)
-        df_benchmark = df_benchmark['close'].values[-horizon:]
-        pprint("Benchmark: ")
 
-        print(len(df_benchmark))
+        df_benchmark = df_benchmark['close'].values[-horizon:]
+
+
+        print(df_benchmark)
 
         df_coin      = self._retrieve_currency_history(coin_ccy).pct_change()
         df_coin      = df_coin['close'].values[-horizon:]
         pprint("Coin: ")
 
-        print(len(df_coin))
+        print(df_coin)
 
         return (df_benchmark, df_coin)
 
