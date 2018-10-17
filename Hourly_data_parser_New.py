@@ -131,7 +131,7 @@ def parse():
             daily_data.update({'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
             print("Iteration Daily " + str(cntr_d) + ":\n")
             daily_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time()}}, upsert=True)
-            time.sleep(1)
+            time.sleep(3)
         except:
             next
 
@@ -166,7 +166,7 @@ def parse():
             data = res[1]
             hourly_data.update({'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
             print("Iteration Hourly " + str(cntr) + ":\n")
-            time.sleep(1)
+            time.sleep(3)
         hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time()}}, upsert=True)
 
 
