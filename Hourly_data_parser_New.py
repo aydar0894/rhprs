@@ -118,10 +118,10 @@ def parse():
     daily_data = db.daily_data
     cntr_d = 0
 
+    coins = coin_pairs.distinct('Coin')
     proxy_cntr = 0
 #     Daily data
-    for data in coin_pairs.find():
-        coin = data["Coin"]
+    for coin in coins:
         try:
 
             cntr_d += 1
@@ -131,16 +131,15 @@ def parse():
             daily_data.update({'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
             print("Iteration Daily " + str(cntr_d) + ":\n")
             daily_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time()}}, upsert=True)
-            time.sleep(3)
+            time.sleep(1)
         except:
             next
 
 
     #Hourly data
-    for data in coin_pairs.find():
+    for coin in coins:
         date_tmp = int(time.time())
         cntr = 0
-        coin = data["Coin"]
 
         date_from = int(time.mktime(datetime.datetime.strptime("2009-01-09-00:00:00","%Y-%m-%d-%H:%M:%S").timetuple()))
         flag_coin_skip = False
@@ -167,8 +166,9 @@ def parse():
             data = res[1]
             hourly_data.update({'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
             print("Iteration Hourly " + str(cntr) + ":\n")
-            time.sleep(3)
+            time.sleep(1)
         hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time()}}, upsert=True)
+
 
 
     return 0

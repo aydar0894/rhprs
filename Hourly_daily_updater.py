@@ -351,11 +351,12 @@ def parse(dtype = "hourly"):
     daily_data = db.daily_data
     cntr_d = 0
     print("In parse")
+    coins = coin_pairs.distinct('Coin')
     proxy_cntr = 0
 #     Daily data
+
     if dtype == "daily":
-        for data in coin_pairs.find():
-            coin = data["Coin"]
+        for coin in coins:
             try:
 
                 cntr_d += 1
@@ -365,7 +366,7 @@ def parse(dtype = "hourly"):
                 daily_data.update({'Ccy': coin}, {'$push':  {'history': { '$each':data}}}, upsert=True)
                 print("Iteration Daily " + str(cntr_d) + ":\n")
                 daily_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time()}}, upsert=True)
-                time.sleep(3)
+                time.sleep(2)
             except:
                 next
         new_compare = MultiplierCorellationCalculator(
@@ -378,13 +379,8 @@ def parse(dtype = "hourly"):
     #Hourly data
     if dtype == "hourly":
         cntr = 0
-        for data in hourly_data.find():
-            print(data["Ccy"])
-
-
-            coin = data["Ccy"]
+         for coin in coins:
             flag_coin_skip = False
-
             cntr += 1
             res=hourly_price_historical(coin)
 #             try:
@@ -411,7 +407,7 @@ def parse(dtype = "hourly"):
             data = res[1][1]
             hourly_data.update({'Ccy': coin}, {'$push':  {'history': data}}, upsert=True)
             print("Iteration Hourly " + str(cntr) + ":\n")
-            time.sleep(3)
+            time.sleep(2)
             hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': dat['close'], 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
 
 #         new_compare = MultiplierCorellationCalculator(
