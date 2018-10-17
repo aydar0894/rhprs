@@ -319,8 +319,8 @@ def check_proxies(proxy_list_path, num_threads):
 
 # In[5]:
 
-def hourly_price_historical(symbol):
-    url = 'https://min-api.cryptocompare.com/data/histohour?fsym={}&tsym=USD&limit=1&aggregate=1'.format(symbol.upper())
+def hourly_price_historical(symbol, limit):
+    url = 'https://min-api.cryptocompare.com/data/histohour?fsym={}&tsym=USD&limit={}&aggregate=1'.format(symbol.upper(), limit)
     page = requests.get(url)
     data = page.json()['Data']
     df = pd.DataFrame(data)
@@ -379,32 +379,40 @@ def parse(dtype = "hourly"):
     #Hourly data
     if dtype == "hourly":
         cntr = 0
-         for coin in coins:
+        for coin in coins:
             flag_coin_skip = False
             cntr += 1
-            res=hourly_price_historical(coin)
-#             try:
+            last_upd = hourly_data.find_one({'Ccy': coin} , {'history' :  {'$slice' : -1}})
+            last_upd = last_upd['history'][0]
+            limit = (time.time() - last_upd['time'])/(60*60)
+            res=hourly_price_historical(coin, limit)
 
+            #             except:
+            #                 continue
 
-#             except:
-#                 continue
-
-#             try:
+            #             try:
             cur_time = time.time()
             tmp_24 = hourly_data.find_one({'Ccy': 'BTC'} , {'history' :  {'$elemMatch' :{'time' : {'$gte': cur_time - 60*60*25, '$lte' : cur_time - 60*60*23}}}})
             tmp_7d = hourly_data.find_one({'Ccy': 'BTC'} , {'history' :  {'$elemMatch' :{'time' : {'$gte': cur_time - 7*60*60*25, '$lte' : cur_time - 7*60*60*23}}}})
             tmp_30d = hourly_data.find_one({'Ccy': 'BTC'} , {'history' :  {'$elemMatch' :{'time' : {'$gte': cur_time - 30*60*60*25, '$lte' : cur_time - 30*60*60*23}}}})
-            dat = res[1][1]
+            if len(res[1]) > 1:
+                dat = res[1]
+                data = res[1]
+            else:
+                dat = res[1][1]
+                data = res[1][1]
+
+
             change_24 = dat['close'] - tmp_24['history'][0]['close']
             change_7d = dat['close'] - tmp_7d['history'][0]['close']
             change_30d = dat['close'] - tmp_30d['history'][0]['close']
-            data['change_24'] = change_24
-            data['change_7d'] = change_7d
-            data['change_30d'] = change_30d
-#             except:
-#                 continue
+            dat['change_24'] = change_24
+            dat['change_7d'] = change_7d
+            dat['change_30d'] = change_30d
+            #             except:
+            #                 continue
             cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
-            data = res[1][1]
+            # data = res[1][1]
             hourly_data.update({'Ccy': coin}, {'$push':  {'history': data}}, upsert=True)
             print("Iteration Hourly " + str(cntr) + ":\n")
             time.sleep(2)
