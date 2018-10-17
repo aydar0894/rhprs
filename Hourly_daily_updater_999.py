@@ -408,8 +408,12 @@ def parse(dtype = "hourly"):
             except:
                 limit = 2000
 
-            res=hourly_price_historical(coin, int(limit - 1))
-#             pprint(res[1])
+            try:
+                res=hourly_price_historical(coin, int(limit - 1))
+            except:
+                print("No data available")
+                continue 
+            pprint(res[1])
 #             pprint(len(res[1]))
             cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
 
@@ -451,7 +455,7 @@ def parse(dtype = "hourly"):
             df_data1 = pd.DataFrame(vot_tmp['history'][:365*24])
             cl = df_data1.pct_change()
             close = cl['close'][1:]
-            vol = numpy.std(close) * 100
+            vol = np.std(close) * 100
 
 
             hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': res[1][len(res[1])-1]['close'], 'volatility': vol, 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
