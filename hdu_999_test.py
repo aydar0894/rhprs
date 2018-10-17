@@ -196,8 +196,10 @@ class MultiplierCorellationCalculator:
         n_times = horizon
         if self.return_frequency == 'daily_data_test':
             delta = delta.days
-            if delta > 1 and delta < n_times:
-                n_times = delta
+        else:
+            delta = int(delta.seconds/3600) + delta.days*24
+        if delta > 1 and delta < n_times:
+            n_times = delta
 
         if horizon != n_times:
             print("Horizon for %s/%s pair fixed from %s to %s" % (benchmark_ccy, coin_ccy, horizon, n_times))
@@ -242,13 +244,11 @@ class MultiplierCorellationCalculator:
     def _timeseries(self, benchmark_ccy, coin_ccy, horizon):
         df_benchmark = self._retrieve_currency_history(benchmark_ccy)
         df_benchmark = df_benchmark.pct_change()
-        print(len(df_benchmark['close'].values[-horizon:-1]))
-        df_benchmark = df_benchmark['close'].values[-horizon:-1]
+        df_benchmark = df_benchmark['close'].values[1:horizon]
 #         print(df_benchmark)
 
         df_coin      = self._retrieve_currency_history(coin_ccy).pct_change()
-        df_coin      = df_coin['close'].values[-horizon:-1]
-        print(len(df_coin['close'].values[-horizon:-1]_)
+        df_coin      = df_coin['close'].values[1:horizon]
 
         return (df_benchmark, df_coin)
 
