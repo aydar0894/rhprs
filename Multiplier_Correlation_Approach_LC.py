@@ -192,8 +192,11 @@ class MultiplierCorellationCalculator:
     def _multiplier_and_correlation(self, arr_PnL_benchmark, arr_PnL_coin):
         #          calculate multiplier
         # least square regression (linear): y = alpha + beta*x
-        pprint(len(arr_PnL_benchmark))
-        pprint(len(arr_PnL_coin))
+        pprint("Benchmark: ")
+        pprint(arr_PnL_benchmark)
+        pprint("Coin: ")
+
+        pprint(arr_PnL_coin)
 
         try:
             linReg = np.polyfit(x=arr_PnL_benchmark, y=arr_PnL_coin, deg=1)
