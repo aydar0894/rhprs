@@ -169,7 +169,7 @@ class MultiplierCorellationCalculator:
         if self.return_frequency == 'daily_data':
             delta = delta.days
         else:
-            delta = int(delta.seconds / 360)
+            delta = int(delta.seconds / 3600)
 
         if delta > 1 and delta < n_times:
             n_times = delta
