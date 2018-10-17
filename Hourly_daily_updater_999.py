@@ -408,7 +408,6 @@ def parse(dtype = "hourly"):
             except:
                 limit = 2000
 
-
             res=hourly_price_historical(coin, int(limit - 1))
 #             pprint(res[1])
 #             pprint(len(res[1]))
@@ -448,8 +447,14 @@ def parse(dtype = "hourly"):
                 change_7d = dat['close'] - tmp_7d['history'][0]['close']
                 change_30d = dat['close'] - tmp_30d['history'][0]['close']
 
+            vot_tmp = hourly_data.find_one({'Ccy': coin})
+            df_data1 = pd.DataFrame(vot_tmp['history'][:365*24])
+            cl = df_data1.pct_change()
+            close = cl['close'][1:]
+            vol = numpy.std(close) * 100
 
-            hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': res[1][len(res[1])-1]['close'], 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
+
+            hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': res[1][len(res[1])-1]['close'], 'volatility': vol, 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
 
             time.sleep(2)
             #             try:
