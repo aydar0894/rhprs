@@ -78,7 +78,7 @@ class MultiplierCorellationCalculator:
     }
 
     def __init__(self,
-                 db_name='bitcoin_test',
+                 db_name='bitcoin',
                  time_interval=1,
                  currencies_list='all',
                  return_frequency='daily'):
@@ -89,7 +89,7 @@ class MultiplierCorellationCalculator:
             msg = 'Only %s values supports for %s collection' % (','.join(self.time_points),
                                                                  return_frequency)
             raise Exception(msg)
-        self.return_frequency = "%s_data" % return_frequency    # select correct collection name
+        self.return_frequency = "%s_data_test" % return_frequency    # select correct collection name
         self.mongo_c = None
         self._mongo_connect(db_name)
         self.db = self.mongo_c[db_name]
@@ -369,8 +369,8 @@ def parse(dtype = "hourly"):
                     authSource='bitcoin')
     db = client.bitcoin
     coin_pairs = db.coin_pairs
-    hourly_data = db.hourly_data
-    daily_data = db.daily_data
+    hourly_data = db.hourly_data_test
+    daily_data = db.daily_data_test
     cntr_d = 0
     print("In parse")
     daily_coins = daily_data.distinct('Ccy')
@@ -496,8 +496,8 @@ def main():
     client = MongoClient('localhost',
                     authSource='bitcoin')
     db = client.bitcoin
-    hourly_data = db.hourly_data
-    daily_data = db.daily_data
+    hourly_data = db.hourly_data_test
+    daily_data = db.daily_data_test
     dd = daily_data.find_one({'Ccy': 'BTC'})
     hd = hourly_data.find_one({'Ccy': 'BTC'})
     last_daily_update = dd["last_update"]

@@ -114,11 +114,11 @@ def parse():
                     authSource='bitcoin')
     db = client.bitcoin
     coin_pairs = db.coin_pairs
-    hourly_data = db.hourly_data
-    daily_data = db.daily_data
+    hourly_data = db.hourly_data_test
+    daily_data = db.daily_data_test
     cntr_d = 0
 
-    coins = coin_pairs.distinct('Coin')
+    coins = ['BTC', 'ETH', 'LTC', 'XRP', 'XMR', 'DASH', 'NEO', 'ETC', 'BCH', 'ZEC']
     proxy_cntr = 0
 #     Daily data
     for coin in coins:
