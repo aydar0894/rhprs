@@ -78,7 +78,7 @@ class MultiplierCorellationCalculator:
     }
 
     def __init__(self,
-                 db_name='bitcoin',
+                 db_name='bitcoin_test',
                  time_interval=1,
                  currencies_list='all',
                  return_frequency='daily'):
@@ -449,9 +449,9 @@ def parse(dtype = "hourly"):
             tmp_30d = hourly_data.find_one({'Ccy': coin} , {'history' :  {'$slice' : (30*24)}})
 
             if len(res[1]) > 2:
-                change_24 = dat[1]['close'] - tmp_24['history'][0]['close']
-                change_7d = dat[1]['close'] - tmp_7d['history'][0]['close']
-                change_30d = dat[1]['close'] - tmp_30d['history'][0]['close']
+                change_24 = dat[1]['close'] - tmp_24['history'][len(tmp_24['history']-1)]['close']
+                change_7d = dat[1]['close'] - tmp_7d['history'][len(tmp_7d['history']-1)]['close']
+                change_30d = dat[1]['close'] - tmp_30d['history'][len(tmp_30d['history']-1)]['close']
 
             else:
                 change_24 = dat['close'] - tmp_24['history'][0]['close']
@@ -462,7 +462,7 @@ def parse(dtype = "hourly"):
             df_data1 = pd.DataFrame(vot_tmp['history'][:365*24])
             cl = df_data1.pct_change()
             close = cl['close'][1:]
-            vol = np.std(close) * 100
+            vol = np.std(close)
 
 
             hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': res[1][len(res[1])-1]['close'], 'volatility': vol, 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
