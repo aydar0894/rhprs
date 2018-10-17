@@ -102,7 +102,7 @@ class MultiplierCorellationCalculator:
 
 
     def _preprocess_time_intervals(self):
-        if self.return_frequency == 'daily_data':
+        if self.return_frequency == 'daily_data_test':
             return list(map(lambda x: x * 30, self.time_points))
         else:
             return list(map(lambda x: x * 24, self.time_points))
@@ -194,7 +194,7 @@ class MultiplierCorellationCalculator:
         maxln = to_datetime(bc_max)
         delta = maxln - minln
         n_times = horizon
-        if self.return_frequency == 'daily_data':
+        if self.return_frequency == 'daily_data_test':
             delta = delta.days
         else:
             delta = delta.seconds / 360
