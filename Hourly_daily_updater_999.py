@@ -102,7 +102,7 @@ class MultiplierCorellationCalculator:
 
 
     def _preprocess_time_intervals(self):
-        if return_frequency == 'daily':
+        if self.return_frequency == 'daily_data':
             return list(map(lambda x: x * 30, self.time_points))
         else:
             return list(map(lambda x: x * 24, self.time_points))
@@ -412,7 +412,7 @@ def parse(dtype = "hourly"):
                 res=hourly_price_historical(coin, int(limit - 1))
             except:
                 print("No data available")
-                continue 
+                continue
             pprint(res[1])
 #             pprint(len(res[1]))
             cols = ['timestamp', 'time', 'open', 'high', 'low', 'close', 'volumefrom', 'volumeto']
