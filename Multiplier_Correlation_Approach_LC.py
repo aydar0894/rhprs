@@ -192,11 +192,11 @@ class MultiplierCorellationCalculator:
     def _multiplier_and_correlation(self, arr_PnL_benchmark, arr_PnL_coin):
         #          calculate multiplier
         # least square regression (linear): y = alpha + beta*x
-        pprint("Benchmark: ")
-        pprint(arr_PnL_benchmark)
-        pprint("Coin: ")
-
-        pprint(arr_PnL_coin)
+        # pprint("Benchmark: ")
+        # pprint(arr_PnL_benchmark)
+        # pprint("Coin: ")
+        #
+        # pprint(arr_PnL_coin)
 
         try:
             linReg = np.polyfit(x=arr_PnL_benchmark, y=arr_PnL_coin, deg=1)
@@ -221,13 +221,17 @@ class MultiplierCorellationCalculator:
     def _timeseries(self, benchmark_ccy, coin_ccy, horizon):
         df_benchmark = self._retrieve_currency_history(benchmark_ccy)
         df_benchmark = df_benchmark.pct_change()
+        pprint(horizon)
+        df_benchmark = df_benchmark['close'].values[-horizon:]
+        pprint("Benchmark: ")
 
-        df_benchmark = df_benchmark['close'].values[-horizon:-1]
-        # print(len(df_benchmark))
+        print(len(df_benchmark))
 
         df_coin      = self._retrieve_currency_history(coin_ccy).pct_change()
-        df_coin      = df_coin['close'].values[-horizon:-1]
-        # print(len(df_coin))
+        df_coin      = df_coin['close'].values[-horizon:]
+        pprint("Coin: ")
+
+        print(len(df_coin))
 
         return (df_benchmark, df_coin)
 
@@ -275,7 +279,7 @@ class MultiplierCorellationCalculator:
 
 time_interval = 1
 
-return_frequency = 'daily'
+return_frequency = 'hourly'
 
 new_compare = MultiplierCorellationCalculator(
                 time_interval=time_interval,
