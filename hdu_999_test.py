@@ -520,18 +520,3 @@ def main():
 # In[31]:
 
 main()
-
-
-# In[ ]:
-
-client = MongoClient('localhost',
-                    authSource='bitcoin')
-db = client.bitcoin
-hourly_data = db.hourly_data
-cur_time = time.time()
-current_info = hourly_data.find_one({'Ccy': 'BTC'} , {'history' :  {'$elemMatch' :{'time' : {'$gte': cur_time - 60*60*25, '$lte' : cur_time - 60*60*23}}}})
-tmp_all_data = current_info["history"]
-pprint(tmp_all_data)
-
-
-# In[ ]:
