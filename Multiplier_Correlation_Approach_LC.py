@@ -193,13 +193,20 @@ class MultiplierCorellationCalculator:
     def _multiplier_and_correlation(self, arr_PnL_benchmark, arr_PnL_coin):
         #          calculate multiplier
         # least square regression (linear): y = alpha + beta*x
-        linReg = np.polyfit(x=arr_PnL_benchmark, y=arr_PnL_coin, deg=1)
-        alpha = linReg[1] # this is the y-intercept, not needed
-        beta  = linReg[0] # this is the slope, which also is the multiplier
+        try:
+            linReg = np.polyfit(x=arr_PnL_benchmark, y=arr_PnL_coin, deg=1)
+            alpha = linReg[1] # this is the y-intercept, not needed
+            beta  = linReg[0] # this is the slope, which also is the multiplier
+        except:
+            alpha = 0.5
+            beta = 0.5
         multiplier = beta
         print("multiplier            : ", multiplier)
         #          calculate correlation          #
-        correlation = pearsonr(arr_PnL_benchmark, arr_PnL_coin)
+        try:
+            correlation = pearsonr(arr_PnL_benchmark, arr_PnL_coin)
+        except:
+            correlation = 0.5
         print("correlation            :", correlation[0])
         return (multiplier, correlation[0])
 
