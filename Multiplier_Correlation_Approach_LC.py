@@ -168,8 +168,10 @@ class MultiplierCorellationCalculator:
         n_times = horizon
         if self.return_frequency == 'daily_data_test':
             delta = delta.days
-            if delta > 1 and delta < n_times:
-                n_times = delta
+        else:
+            delta = int(delta.seconds/3600) + delta.days*24
+        if delta > 1 and delta < n_times:
+            n_times = delta
 
 
         if horizon != n_times:
