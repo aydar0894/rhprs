@@ -390,8 +390,12 @@ def parse(dtype = "hourly"):
             flag_coin_skip = False
             cntr += 1
             last_upd = hourly_data.find_one({'Ccy': coin} , {'history' :  {'$slice' : 1}})
-            last_upd = last_upd['history'][0]
-            limit = (time.time() - last_upd['time'])/(60*60)
+            try:
+                last_upd = last_upd['history'][0]
+                limit = (time.time() - last_upd['time'])/(60*60)
+            except:
+                limit = 2000
+
 
             res=hourly_price_historical(coin, int(limit - 1))
 #             pprint(res[1])
