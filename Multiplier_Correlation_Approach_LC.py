@@ -224,13 +224,13 @@ class MultiplierCorellationCalculator:
         df_benchmark = self._retrieve_currency_history(benchmark_ccy)
         df_benchmark = df_benchmark.pct_change()
 
-        df_benchmark = df_benchmark['close'].values[-horizon:]
+        df_benchmark = df_benchmark['close'].values[1:horizon]
 
         df_coin      = self._retrieve_currency_history(coin_ccy)
         pprint(df_coin)
         df_coin = df_coin.pct_change()
         print(df_coin)
-        df_coin      = df_coin['close'].values[-horizon:]
+        df_coin      = df_coin['close'].values[1:horizon]
 
 
 
