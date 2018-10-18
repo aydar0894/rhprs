@@ -459,21 +459,32 @@ def parse(dtype = "hourly"):
             tmp_7d = hourly_data.find_one({'Ccy': coin} , {'history' :  {'$slice' : (7*24)}})
             tmp_30d = hourly_data.find_one({'Ccy': coin} , {'history' :  {'$slice' : (30*24)}})
 
-            change_24 = tmp_24['history'][len(tmp_24['history'])-1]['close'] - tmp_24['history'][0]['close']
-            change_7d = tmp_7d['history'][len(tmp_7d['history'])-1]['close'] - tmp_7d['history'][0]['close']
-            change_30d = tmp_30d['history'][len(tmp_30d['history'])-1]['close'] - tmp_30d['history'][0]['close']
+            change_24 = tmp_24['history'][0]['close'] - tmp_24['history'][len(tmp_24['history'])-1]['close']
+            change_7d = tmp_7d['history'][0]['close'] - tmp_7d['history'][len(tmp_7d['history'])-1]['close']
+            change_30d = tmp_30d['history'][0]['close'] - tmp_30d['history'][len(tmp_30d['history'])-1]['close']
 
             vot_tmp = hourly_data.find_one({'Ccy': coin})
             df_data1 = pd.DataFrame(vot_tmp['history'][:365*24])
             cl = df_data1.pct_change()
             close = cl['close'][1:]
             vol = np.std(close)
+
+
             try:
                 marcap = market_caps[coin]
             except:
                 marcap = 0
+            try:
+                prev_mc = hourly_data.find_one({'Ccy': coin})
+                prev_mc = prev_mc['market_cap']
+                marcap = market_caps[coin]
+                marcap_change = marcap - prev_mc
+                if marcap_change < 0:
+                    marcap_change = 0
+            except:
+                marcap_change = 0
 
-            hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': last_upd['time'], 'price': res[1][len(res[1])-1]['close'], 'market_cap': marcap, 'volatility': vol, 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
+            hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': last_upd['time'], 'price': res[1][len(res[1])-1]['close'], 'market_cap': marcap, 'market_cap_change': marcap_change, 'volatility': vol, 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
 
             time.sleep(2)
             #             try:
