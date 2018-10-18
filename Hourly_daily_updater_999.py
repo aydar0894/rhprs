@@ -361,6 +361,17 @@ def daily_price_historical(symbol):
     return [df, data]
 
 
+def get_market_caps(coin_list):
+    url = 'https://api.coinmarketcap.com/v2/ticker/?limit={}&sort=rank'.format(100)
+    page = requests.get(url)
+    data = page.json()['data']
+    coins_caps = {}
+    # pprint(data)
+    for index in data:
+        if data[index]['symbol'] in coin_list:
+            coins_caps.update({data[index]['symbol']: data[index]['quotes']['USD']['market_cap']})
+    return(coins_caps)
+
 # In[29]:
 
 def parse(dtype = "hourly"):
@@ -403,6 +414,7 @@ def parse(dtype = "hourly"):
 
     #Hourly data
     if dtype == "hourly":
+        market_caps = get_market_caps(hourly_coins)
         cntr = 0
         for coin in hourly_coins:
 
@@ -448,15 +460,9 @@ def parse(dtype = "hourly"):
             tmp_7d = hourly_data.find_one({'Ccy': coin} , {'history' :  {'$slice' : (7*24)}})
             tmp_30d = hourly_data.find_one({'Ccy': coin} , {'history' :  {'$slice' : (30*24)}})
 
-            if len(res[1]) > 2:
-                change_24 = dat[1]['close'] - tmp_24['history'][len(tmp_24['history'])-1]['close']
-                change_7d = dat[1]['close'] - tmp_7d['history'][len(tmp_7d['history'])-1]['close']
-                change_30d = dat[1]['close'] - tmp_30d['history'][len(tmp_30d['history'])-1]['close']
-
-            else:
-                change_24 = dat['close'] - tmp_24['history'][0]['close']
-                change_7d = dat['close'] - tmp_7d['history'][0]['close']
-                change_30d = dat['close'] - tmp_30d['history'][0]['close']
+            change_24 = tmp_24['history'][0]['close'] - tmp_24['history'][len(tmp_24['history'])-1]['close']
+            change_7d = tmp_7d['history'][0]['close'] - tmp_7d['history'][len(tmp_7d['history'])-1]['close']
+            change_30d = tmp_30d['history'][0]['close'] - tmp_30d['history'][len(tmp_30d['history'])-1]['close']
 
             vot_tmp = hourly_data.find_one({'Ccy': coin})
             df_data1 = pd.DataFrame(vot_tmp['history'][:365*24])
@@ -465,7 +471,21 @@ def parse(dtype = "hourly"):
             vol = np.std(close)
 
 
-            hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': res[1][len(res[1])-1]['close'], 'volatility': vol, 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
+            try:
+                marcap = market_caps[coin]
+            except:
+                marcap = 0
+            try:
+                prev_mc = hourly_data.find_one({'Ccy': coin})
+                prev_mc = prev_mc['market_cap']
+                marcap = market_caps[coin]
+                marcap_change = marcap - prev_mc
+                if marcap_change < 0:
+                    marcap_change = 0
+            except:
+                marcap_change = 0
+
+            hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': res[1][len(res[1])-1]['close'], 'market_cap': marcap, 'market_cap_change': marcap_change, 'volatility': vol, 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
 
             time.sleep(2)
             #             try:
@@ -506,12 +526,14 @@ def main():
 
 
         if (time.time() - last_daily_update) >= 60*60*24:
-            parse(dtype="daily")
             last_daily_update = time.time()
+            parse(dtype="daily")
+
 
         if (time.time() - last_hourly_update) >= 60*60:
-            parse(dtype="hourly")
             last_hourly_update = time.time()
+            parse(dtype="hourly")
+
         else:
             print("Wating until next iteration")
             time.sleep(3600 - (time.time() - last_hourly_update))
@@ -520,18 +542,3 @@ def main():
 # In[31]:
 
 main()
-
-
-# In[ ]:
-
-client = MongoClient('localhost',
-                    authSource='bitcoin')
-db = client.bitcoin
-hourly_data = db.hourly_data
-cur_time = time.time()
-current_info = hourly_data.find_one({'Ccy': 'BTC'} , {'history' :  {'$elemMatch' :{'time' : {'$gte': cur_time - 60*60*25, '$lte' : cur_time - 60*60*23}}}})
-tmp_all_data = current_info["history"]
-pprint(tmp_all_data)
-
-
-# In[ ]:

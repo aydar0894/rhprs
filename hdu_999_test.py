@@ -525,12 +525,14 @@ def main():
 
 
         if (time.time() - last_daily_update) >= 60*60*24:
-            parse(dtype="daily")
             last_daily_update = time.time()
+            parse(dtype="daily")
+
 
         if (time.time() - last_hourly_update) >= 60*60:
-            parse(dtype="hourly")
             last_hourly_update = time.time()
+            parse(dtype="hourly")
+
         else:
             print("Wating until next iteration")
             time.sleep(3600 - (time.time() - last_hourly_update))
