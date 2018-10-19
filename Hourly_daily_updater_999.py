@@ -221,9 +221,7 @@ def parse(dtype = "hourly"):
                 prev_mc = hourly_data.find_one({'Ccy': coin})
                 prev_mc = prev_mc['market_cap']
                 marcap = market_caps[coin]['market_cap']
-                marcap_change = marcap - prev_mc
-                if marcap_change < 0:
-                    marcap_change = 0
+                marcap_change = marcap - prev_mc                
             except:
                 marcap_change = 0
 
