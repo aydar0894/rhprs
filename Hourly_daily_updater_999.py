@@ -104,14 +104,15 @@ def daily_price_historical(symbol):
 
 
 def get_market_caps(coin_list):
-    url = 'https://api.coinmarketcap.com/v2/ticker/?limit={}&sort=rank'.format(100)
-    page = requests.get(url)
-    data = page.json()['data']
     coins_caps = {}
-    # pprint(data)
-    for index in data:
-        if data[index]['symbol'] in coin_list:
-            coins_caps.update({data[index]['symbol']: data[index]['quotes']['USD']['market_cap']})
+    for i in range(6):
+        url = 'https://api.coinmarketcap.com/v2/ticker/?start={}&limit={}&sort=rank'.format(i*100+1, 100)
+        page = requests.get(url)
+        data = page.json()['data']
+        # pprint(data)
+        for index in data:
+            if data[index]['symbol'] in coin_list:
+                coins_caps.update({data[index]['symbol']: {'market_cap' : data[index]['quotes']['USD']['market_cap'], 'rank' : data[index]['rank']}})
     return(coins_caps)
 
 # In[29]:
@@ -209,20 +210,24 @@ def parse(dtype = "hourly"):
 
 
             try:
-                marcap = market_caps[coin]
+                marcap = market_caps[coin]['market_cap']
+                rank = market_caps[coin]['rank']
+
             except:
                 marcap = 0
+                rank = 0
+
             try:
                 prev_mc = hourly_data.find_one({'Ccy': coin})
                 prev_mc = prev_mc['market_cap']
-                marcap = market_caps[coin]
+                marcap = market_caps[coin]['market_cap']
                 marcap_change = marcap - prev_mc
                 if marcap_change < 0:
                     marcap_change = 0
             except:
                 marcap_change = 0
 
-            hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': res[1][len(res[1])-1]['close'], 'market_cap': marcap, 'market_cap_change': marcap_change, 'volatility': vol, 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
+            hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': res[1][len(res[1])-1]['close'], 'market_cap': marcap, 'rank': rank, 'market_cap_change': marcap_change, 'volatility': vol, 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
 
             time.sleep(2)
 
