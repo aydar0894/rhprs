@@ -146,7 +146,7 @@ def parse(dtype = "hourly"):
                 daily_data.update({'Ccy': coin}, {'$push':  {'history' : {'$each': data, '$position': 0}}}, upsert=True)
                 print("Iteration Daily " + str(cntr_d) + ":\n")
                 daily_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time()}}, upsert=True)
-                time.sleep(2)
+                time.sleep(3)
             except:
                 next
 
@@ -237,7 +237,7 @@ def parse(dtype = "hourly"):
 
             hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': res[1][len(res[1])-1]['close'], 'market_cap': marcap, 'rank': rank, 'market_cap_change': marcap_change, 'market_cap_change_pc': marcap_change_pc,  'volatility': vol, 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d, 'change_24_pc' : change_24_pc, 'change_7d_pc' : change_7d_pc, 'change_30d_pc' : change_30d_pc}}, upsert=True)
 
-            time.sleep(2)
+            time.sleep(3)
 
 
 
