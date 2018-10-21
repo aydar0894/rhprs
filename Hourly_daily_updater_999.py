@@ -105,7 +105,7 @@ def daily_price_historical(symbol):
 
 def get_market_caps(coin_list):
     coins_caps = {}
-    for i in range(6):
+    for i in range(8):
         url = 'https://api.coinmarketcap.com/v2/ticker/?start={}&limit={}&sort=rank'.format(i*100+1, 100)
         page = requests.get(url)
         data = page.json()['data']
@@ -113,6 +113,7 @@ def get_market_caps(coin_list):
         for index in data:
             if data[index]['symbol'] in coin_list:
                 coins_caps.update({data[index]['symbol']: {'market_cap' : data[index]['quotes']['USD']['market_cap'], 'rank' : data[index]['rank']}})
+                time.sleep(0.5)
     return(coins_caps)
 
 # In[29]:
@@ -202,6 +203,10 @@ def parse(dtype = "hourly"):
             change_7d = tmp_7d['history'][0]['close'] - tmp_7d['history'][len(tmp_7d['history'])-1]['close']
             change_30d = tmp_30d['history'][0]['close'] - tmp_30d['history'][len(tmp_30d['history'])-1]['close']
 
+            change_24_pc = (tmp_24['history'][0]['close']/tmp_24['history'][len(tmp_24['history'])-1]['close'] - 1) * 100
+            change_7d_pc = (tmp_7d['history'][0]['close']/tmp_7d['history'][len(tmp_7d['history'])-1]['close'] - 1) * 100
+            change_30d_pc = (tmp_30d['history'][0]['close']/tmp_30d['history'][len(tmp_30d['history'])-1]['close'] - 1) * 100
+
             vot_tmp = hourly_data.find_one({'Ccy': coin})
             df_data1 = pd.DataFrame(vot_tmp['history'][:365*24])
             cl = df_data1.pct_change()
@@ -221,11 +226,16 @@ def parse(dtype = "hourly"):
                 prev_mc = hourly_data.find_one({'Ccy': coin})
                 prev_mc = prev_mc['market_cap']
                 marcap = market_caps[coin]['market_cap']
-                marcap_change = marcap - prev_mc                
+                marcap_change = marcap - prev_mc
+                marcap_change_pc = (marcap/prev_mc - 1) * 100
+                if marcap_change < 0:
+                    marcap_change = 0
+                    marcap_change_pc = 0
             except:
                 marcap_change = 0
+                marcap_change_pc = 0
 
-            hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': res[1][len(res[1])-1]['close'], 'market_cap': marcap, 'rank': rank, 'market_cap_change': marcap_change, 'volatility': vol, 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d}}, upsert=True)
+            hourly_data.update({'Ccy': coin}, {'$set':  {'last_update': time.time(), 'price': res[1][len(res[1])-1]['close'], 'market_cap': marcap, 'rank': rank, 'market_cap_change': marcap_change, 'market_cap_change_pc': marcap_change_pc,  'volatility': vol, 'change_24' : change_24, 'change_7d' : change_7d, 'change_30d' : change_30d, 'change_24_pc' : change_24_pc, 'change_7d_pc' : change_7d_pc, 'change_30d_pc' : change_30d_pc}}, upsert=True)
 
             time.sleep(2)
 
