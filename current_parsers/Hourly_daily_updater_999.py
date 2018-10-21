@@ -136,7 +136,7 @@ def parse(dtype = "hourly"):
 
     if dtype == "daily":
         for coin in daily_coins:
-            daily_data.update({'Ccy': coin}, {'$push':  {'history' : { '$each': [], '$sort' : : {'time' : -1} }}}, upsert=True)
+            daily_data.update({'Ccy': coin}, {'$push':  {'history' : { '$each': [], '$sort' : {'time' : -1} }}}, upsert=True)
             try:
 
                 cntr_d += 1
