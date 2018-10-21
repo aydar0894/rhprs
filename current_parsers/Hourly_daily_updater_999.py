@@ -199,13 +199,23 @@ def parse(dtype = "hourly"):
             tmp_7d = hourly_data.find_one({'Ccy': coin} , {'history' :  {'$slice' : (7*24)}})
             tmp_30d = hourly_data.find_one({'Ccy': coin} , {'history' :  {'$slice' : (30*24)}})
 
+
             change_24 = tmp_24['history'][0]['close'] - tmp_24['history'][len(tmp_24['history'])-1]['close']
             change_7d = tmp_7d['history'][0]['close'] - tmp_7d['history'][len(tmp_7d['history'])-1]['close']
             change_30d = tmp_30d['history'][0]['close'] - tmp_30d['history'][len(tmp_30d['history'])-1]['close']
 
-            change_24_pc = (tmp_24['history'][0]['close']/tmp_24['history'][len(tmp_24['history'])-1]['close'] - 1) * 100
-            change_7d_pc = (tmp_7d['history'][0]['close']/tmp_7d['history'][len(tmp_7d['history'])-1]['close'] - 1) * 100
-            change_30d_pc = (tmp_30d['history'][0]['close']/tmp_30d['history'][len(tmp_30d['history'])-1]['close'] - 1) * 100
+            try:
+                change_24_pc = (tmp_24['history'][0]['close']/tmp_24['history'][len(tmp_24['history'])-1]['close'] - 1) * 100
+            except:
+                change_24_pc = 100
+            try:
+                change_7d_pc = (tmp_7d['history'][0]['close']/tmp_7d['history'][len(tmp_7d['history'])-1]['close'] - 1) * 100
+            except:
+                change_7d_pc = 100
+            try:
+                change_30d_pc = (tmp_30d['history'][0]['close']/tmp_30d['history'][len(tmp_30d['history'])-1]['close'] - 1) * 100
+            except:
+                change_30d_pc = 100
 
             vot_tmp = hourly_data.find_one({'Ccy': coin})
             df_data1 = pd.DataFrame(vot_tmp['history'][:365*24])
