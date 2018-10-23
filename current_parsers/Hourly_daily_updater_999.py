@@ -238,9 +238,7 @@ def parse(dtype = "hourly"):
                 marcap = market_caps[coin]['market_cap']
                 marcap_change = marcap - prev_mc
                 marcap_change_pc = (marcap/prev_mc - 1) * 100
-                if marcap_change < 0:
-                    marcap_change = 0
-                    marcap_change_pc = 0
+                
             except:
                 marcap_change = 0
                 marcap_change_pc = 0
